@@ -11,6 +11,7 @@
 /client/.pnp
 /client/.pnp.js
 /client/.yarn/install-state.gz
+/client/*.env
 
 # testing
 /client/coverage
