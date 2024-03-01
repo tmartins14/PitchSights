@@ -3,10 +3,12 @@ const { Schema } = mongoose;
 
 const seasonSchema = new Schema(
   {
-    year: String,
+    seasonId: { type: String, required: true },
+    seasonName: { type: String, required: true },
     league: { type: Schema.Types.ObjectId, ref: "leagues" },
-    teams: [{ type: Schema.Types.ObjectId, ref: "teams" }],
-    matches: [{ type: Schema.Types.ObjectId, ref: "matches" }],
+    year: String,
+    startDate: Date,
+    endDate: Date,
   },
   { timestamps: true }
 );
