@@ -21,4 +21,6 @@ const statsSchema = new Schema(
   { timestamps: true }
 );
 
-mongoose.model("stats", statsSchema);
+const Stats = mongoose.model("stats", statsSchema);
+
+module.exports = Stats;

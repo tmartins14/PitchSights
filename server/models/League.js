@@ -11,4 +11,6 @@ const leagueSchema = new Schema(
   { timestamps: true }
 );
 
-mongoose.model("leagues", leagueSchema);
+const League = mongoose.model("leagues", leagueSchema);
+
+module.exports = League;
