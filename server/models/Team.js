@@ -1,16 +1,36 @@
-// const mongoose = require("mongoose");
-// const { Schema } = mongoose;
+const Sequelize = require("sequelize");
+const sequelize = require("../services/database");
 
-// const teamSchema = new Schema(
-//   {
-//     name: String,
-//     league: { type: Schema.Types.ObjectId, ref: "leagues" },
-//     country: { type: String, required: true },
-//     players: [{ type: Schema.Types.ObjectId, ref: "players" }],
-//   },
-//   { timestamps: true }
-// );
+const Team = sequelize.define(
+  "teams",
+  {
+    competitor_id: {
+      type: Sequelize.INTEGER,
+      allowNull: false,
+      primaryKey: true,
+    },
+    full_name: {
+      type: Sequelize.STRING,
+      allowNull: false,
+    },
+    short_name: {
+      type: Sequelize.STRING,
+      allowNull: false,
+    },
+    abbv: {
+      type: Sequelize.STRING,
+      allowNull: false,
+    },
+    updatedAt: {
+      type: Sequelize.DATE,
+      allowNull: false,
+    },
+  },
+  {
+    // Disable timestamps or specifically the updatedAt field
+    timestamps: true, // Keep it true if you want the createdAt field to be automatically managed
+    createdAt: false, // Specifically disable the updatedAt functionality
+  }
+);
 
-// const Team = mongoose.model("teams", teamSchema);
-
-// module.exports = Team;
+module.exports = Team;

@@ -1,28 +1,88 @@
-// const mongoose = require("mongoose");
-// const { Schema } = mongoose;
+const Sequelize = require("sequelize");
+const database = require("../services/database");
 
-// const matchSchema = new Schema(
-//   {
-//     matchId: { type: String, required: true },
-//     homeTeam: { type: Schema.Types.ObjectId, ref: "teams" },
-//     awayTeam: { type: Schema.Types.ObjectId, ref: "teams" },
-//     startTime: { type: Date, required: true },
-//     date: Date,
-//     league: { type: Schema.Types.ObjectId, ref: "leagues" },
-//     season: { type: Schema.Types.ObjectId, ref: "seasons" },
-//     matchStatus: {
-//       type: String,
-//       enum: ["Not Started", "In Progress", "Finished"],
-//     },
-//     homeScore: { type: Number, required: true },
-//     awayScore: { type: Number, required: true },
-//     matchWinner: { type: Schema.Types.ObjectId, ref: "teams" },
-//     //     stats: { type: Schema.Types.ObjectId, ref: "stats" }, // Match-level statistics
-//     //     events: [{ type: Schema.Types.ObjectId, ref: "events" }], // All events occurring in the match
-//   },
-//   { timestamps: true }
-// );
+// Assuming you've already defined and imported League somewhere if needed for relationships
 
-// const Match = mongoose.model("matches", matchSchema);
+const Match = database.define(
+  "matches",
+  {
+    sport_event_id: {
+      type: Sequelize.INTEGER,
+      autoIncrement: false,
+      allowNull: false,
+      primaryKey: true,
+    },
+    competition_id: {
+      type: Sequelize.INTEGER,
+      allowNull: false,
+      references: {
+        model: "leagues", // This is the table name that Sequelize automatically generates
+        key: "competition_id",
+      },
+      default: -1,
+    },
+    season_id: {
+      type: Sequelize.INTEGER,
+      allowNull: false,
+      references: {
+        model: "seasons", // This is the table name that Sequelize automatically generates
+        key: "season_id",
+      },
+    },
 
-// module.exports = Match;
+    home_team_id: {
+      type: Sequelize.INTEGER,
+      allowNull: false,
+      references: {
+        model: "teams",
+        key: "competitor_id",
+      },
+      default: -1,
+    },
+    away_team_id: {
+      type: Sequelize.INTEGER,
+      allowNull: false,
+      references: {
+        model: "teams", // This is the table name that Sequelize automatically generates
+        key: "competitor_id",
+      },
+      default: -1,
+    },
+    winner_id: {
+      type: Sequelize.INTEGER,
+      allowNull: true,
+      references: {
+        model: "teams",
+        key: "competitor_id",
+      },
+      default: -1,
+    },
+    home_score: {
+      type: Sequelize.INTEGER,
+      allowNull: true,
+    },
+    away_score: {
+      type: Sequelize.INTEGER,
+      allowNull: true,
+    },
+    start_time: {
+      type: Sequelize.DATEONLY,
+      allowNull: false,
+    },
+    venue: {
+      type: Sequelize.STRING,
+      allowNull: true,
+    },
+    updatedAt: {
+      type: Sequelize.DATE,
+      allowNull: false,
+    },
+  },
+  {
+    // Disable timestamps or specifically the updatedAt field
+    timestamps: true, // Keep it true if you want the createdAt field to be automatically managed
+    createdAt: false, // Specifically disable the updatedAt functionality
+  }
+);
+
+module.exports = Match;

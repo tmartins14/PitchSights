@@ -1,4 +1,7 @@
 
+# Root
+/PitchSights_DataModel.xlsx
+
 # Server
 /server/config/dev.js
 /server/node_modules

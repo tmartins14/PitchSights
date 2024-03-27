@@ -1,42 +1,24 @@
-// const mongoose = require("mongoose");
-// const { Schema } = mongoose;
-
-// const leagueSchema = new Schema(
-//   {
-//     leagueId: { type: String, required: true },
-//     leagueName: String,
-//     country: String,
-//     gender: { type: String, required: true },
-//   },
-//   { timestamps: true }
-// );
-
-// const League = mongoose.model("leagues", leagueSchema);
-
-// module.exports = League;
-
 const Sequelize = require("sequelize");
-const sequelize = require("../services/database"); // Adjust the path as necessary
-
+const sequelize = require("../services/database");
 const League = sequelize.define(
-  "league",
+  "leagues",
   {
-    leagueId: {
+    league_id: {
       type: Sequelize.INTEGER,
       allowNull: false,
       primaryKey: true,
     },
-    leagueName: {
+    league_name: {
       type: Sequelize.STRING,
       allowNull: false,
     },
     country: {
       type: Sequelize.STRING,
-      allowNull: false,
+      allowNull: true,
     },
-    gender: {
+    league_logo: {
       type: Sequelize.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     updatedAt: {
       type: Sequelize.DATE,

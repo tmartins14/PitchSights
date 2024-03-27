@@ -1,22 +1,3 @@
-// const mongoose = require("mongoose");
-// const { Schema } = mongoose;
-
-// const seasonSchema = new Schema(
-//   {
-//     seasonId: { type: String, required: true },
-//     seasonName: { type: String, required: true },
-//     league: { type: Schema.Types.ObjectId, ref: "leagues" },
-//     year: String,
-//     startDate: Date,
-//     endDate: Date,
-//   },
-//   { timestamps: true }
-// );
-
-// const Season = mongoose.model("seasons", seasonSchema);
-
-// module.exports = Season;
-
 const Sequelize = require("sequelize");
 const database = require("../services/database");
 
@@ -25,29 +6,30 @@ const database = require("../services/database");
 const Season = database.define(
   "seasons",
   {
-    seasonId: {
+    season_id: {
       type: Sequelize.INTEGER,
       autoIncrement: true,
       allowNull: false,
       primaryKey: true,
     },
-    leagueId: {
+    league_id: {
       type: Sequelize.INTEGER,
       allowNull: false,
       references: {
         model: "leagues", // This is the table name that Sequelize automatically generates
-        key: "leagueId",
+        key: "league_id",
       },
+      default: -1,
     },
-    name: {
+    season_name: {
       type: Sequelize.STRING,
       allowNull: false,
     },
-    startDate: {
+    start_date: {
       type: Sequelize.DATEONLY,
       allowNull: false,
     },
-    endDate: {
+    end_date: {
       type: Sequelize.DATEONLY,
       allowNull: false,
     },
