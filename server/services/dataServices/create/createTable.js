@@ -1,4 +1,4 @@
-const { database, models } = require("../../../models/index"); // Adjust the path as necessary
+const { database, models } = require("../../../models/models"); // Adjust the path as necessary
 
 // Function to create a table based on the model name
 async function createTable(modelName) {
@@ -28,4 +28,4 @@ async function createTable(modelName) {
 }
 
 // Example usage: Replace 'leagues' with the name of the model you wish to drop
-createTable("seasons");
+createTable("players");

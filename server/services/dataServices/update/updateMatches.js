@@ -1,33 +1,34 @@
 const axios = require("axios");
 const Match = require("../../../models/Match.js");
-const keys = require("../../../config/keys");
-const { sportRadarAPI } = keys;
-const fetchAllSeasonIds = require("../read/fetchAllSeasonIds");
+const MetaData = require("../../../models/MetaData"); // Sequelize model for MetaData
+const fetchMetaData = require("../read/fetchMetaData");
 const delay = require("../../delay");
 const compareApiAndDbData = require("../../compareApiAndDbData");
+const keys = require("../../../config/keys");
+const { apiFootball } = keys;
 
-const updateMatchData = async ({ sport_event, sport_event_status }) => {
+const updateMatchData = async (matchData, season) => {
   try {
     // Check for existing match
     const existingMatch = await Match.findOne({
-      where: { sport_event_id: sport_event.id.split(":")[2] },
+      where: { fixture_id: matchData.fixture.id },
     });
 
     const updateData = {
-      sport_event_id: sport_event.id.split(":")[2],
-      competition_id:
-        sport_event.sport_event_context.competition.id.split(":")[2],
-      season_id: sport_event.sport_event_context.season.id.split(":")[2],
-      home_team_id: sport_event.competitors[0].id.split(":")[2],
-      away_team_id: sport_event.competitors[1].id.split(":")[2],
-      winner_id:
-        sport_event_status && sport_event_status.winner_id
-          ? sport_event_status.winner_id.split(":")[2]
-          : null,
-      home_score: sport_event_status.home_score,
-      away_score: sport_event_status.away_score,
-      start_time: sport_event.start_time,
-      venue: sport_event && sport_event.venue ? sport_event.venue.name : null,
+      fixture_id: matchData.fixture.id,
+      league_id: matchData.league.id,
+      season_year: matchData.league.season,
+      home_team_id: matchData.teams.home.id,
+      away_team_id: matchData.teams.away.id,
+      winner_id: matchData.teams.home.winner
+        ? matchData.teams.home.id
+        : matchData.teams.away.winner
+        ? matchData.teams.away.id
+        : null,
+      home_score: matchData.goals.home,
+      away_score: matchData.goals.away,
+      start_datetime: matchData.fixture.date,
+      venue: matchData.fixture.venue.name,
     };
 
     if (!existingMatch) {
@@ -35,30 +36,51 @@ const updateMatchData = async ({ sport_event, sport_event_status }) => {
     } else {
       if (!compareApiAndDbData(existingMatch, updateData)) {
         await Match.update(updateData, {
-          where: { sport_event_id: updateData.sport_event_id },
+          where: { fixture_id: updateData.fixture_id },
         });
       }
     }
-    console.log(`Updated Match ${sport_event.id}`);
+
+    // Update meta data to track which matches have been updated - required due to API service limitation
+    await MetaData.update(
+      { matches_updated: true },
+      { where: { season_id: season.season_id } }
+    );
+
+    console.log(`Updated Match ${matchData.fixture.id}`);
   } catch (error) {
-    console.log(`Error update match: ${sport_event.id}: `, error);
+    console.log(`Error update match: ${matchData.fixture.id}: `, error);
   }
 };
 
 const fetchAndUpdateMatches = async () => {
-  const seasons = await fetchAllSeasonIds();
+  const updateSeasons = await fetchMetaData("matches");
 
-  for (season of seasons) {
-    await delay(sportRadarAPI.accessLevel);
+  // API limits requests per minute
+  let counter = 0;
 
-    const matchData = await axios.get(
-      `${sportRadarAPI.URL}/${sportRadarAPI.accessLevel}/${sportRadarAPI.version}/${sportRadarAPI.languageCode}/seasons/${season}/schedules.json`,
-      { params: { api_key: sportRadarAPI.soccerKey } }
-    );
+  for (season of updateSeasons) {
+    const config = {
+      method: "get",
+      url: `https://v3.football.api-sports.io/fixtures?league=${season.league_id}&season=${season.season_year}`,
+      headers: {
+        "x-rapidapi-host": "v3.football.api-sports.io",
+        "x-rapidapi-key": apiFootball.apiKey,
+      },
+    };
 
-    for (match of matchData.data.schedules) {
-      await updateMatchData(match);
+    if (counter === apiFootball.rateLimit) {
+      await delay();
+      counter = 0;
     }
+
+    const matchData = await axios(config);
+
+    for (match of matchData.data.response) {
+      updateMatchData(match, season);
+    }
+
+    counter++;
   }
 };
 

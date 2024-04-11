@@ -3,14 +3,18 @@ const database = require("../services/database");
 
 // Assuming you've already defined and imported League somewhere if needed for relationships
 
-const Season = database.define(
-  "seasons",
+const MetaData = database.define(
+  "meta_data",
   {
     season_id: {
       type: Sequelize.STRING,
       autoIncrement: false,
       allowNull: false,
-      primaryKey: true,
+      primaryKey: false,
+      references: {
+        model: "seasons", // This is the table name that Sequelize automatically generates
+        key: "season_id",
+      },
     },
     season_year: {
       type: Sequelize.INTEGER,
@@ -27,21 +31,24 @@ const Season = database.define(
       },
       default: -1,
     },
-    season_name: {
-      type: Sequelize.STRING,
-      allowNull: false,
-    },
-    start_date: {
-      type: Sequelize.DATEONLY,
-      allowNull: false,
-    },
-    end_date: {
-      type: Sequelize.DATEONLY,
-      allowNull: false,
-    },
     current: {
       type: Sequelize.BOOLEAN,
       allowNull: true,
+      default: false,
+    },
+    teams_updated: {
+      type: Sequelize.BOOLEAN,
+      allowNull: false,
+      default: false,
+    },
+    matches_updated: {
+      type: Sequelize.BOOLEAN,
+      allowNull: false,
+      default: false,
+    },
+    players_updated: {
+      type: Sequelize.BOOLEAN,
+      allowNull: false,
       default: false,
     },
     updatedAt: {
@@ -56,4 +63,4 @@ const Season = database.define(
   }
 );
 
-module.exports = Season;
+module.exports = MetaData;

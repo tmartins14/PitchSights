@@ -1,22 +1,23 @@
 const axios = require("axios");
 const Team = require("../../../models/Team");
-const fetchAllSeasonIds = require("../read/fetchAllSeasonIds");
+const MetaData = require("../../../models/MetaData"); // Sequelize model for MetaData
+const fetchMetaData = require("../read/fetchMetaData");
 const delay = require("../../delay");
 const compareApiAndDbData = require("../../compareApiAndDbData");
 const keys = require("../../../config/keys");
-const { sportRadarAPI } = keys;
+const { apiFootball } = keys;
 
-const updateTeamData = async (teamData) => {
+const updateTeamData = async (teamData, season) => {
   try {
     const existingTeam = await Team.findOne({
-      where: { competitor_id: teamData.id.split(":")[2] },
+      where: { team_id: teamData.id },
     });
 
     const updateData = {
-      competitor_id: teamData.id.split(":")[2],
-      full_name: teamData.name,
-      short_name: teamData.short_name,
-      abbv: teamData.abbreviation,
+      team_id: teamData.id,
+      name: teamData.name,
+      abbv: teamData.code,
+      logo: teamData.logo,
     };
 
     if (!existingTeam) {
@@ -24,10 +25,16 @@ const updateTeamData = async (teamData) => {
     } else {
       if (!compareApiAndDbData(existingTeam, updateData)) {
         await Team.update(updateData, {
-          where: { competitor_id: updateData.competitor_id },
+          where: { team_id: updateData.team_id },
         });
       }
     }
+
+    // Update meta data to track which teams have been updated - required due to API service limitation
+    await MetaData.update(
+      { teams_updated: true },
+      { where: { season_id: season.season_id } }
+    );
     console.log(`Updated Team ${teamData.name}`);
   } catch (error) {
     console.log(`Error updating team ${teamData.name}: `, error);
@@ -35,19 +42,34 @@ const updateTeamData = async (teamData) => {
 };
 
 const fetchAndUpdateTeams = async () => {
-  const seasons = await fetchAllSeasonIds();
+  const updateSeasons = await fetchMetaData("teams");
 
-  for (season of seasons) {
-    await delay(sportRadarAPI.accessLevel); // Delay to prevent hitting API too quickly
+  // API limits requests per minute
+  let counter = 0;
+  // console.log(seasons);
+  for (season of updateSeasons) {
+    const config = {
+      method: "get",
+      url: `https://v3.football.api-sports.io/teams?league=${season.league_id}&season=${season.season_year}`,
+      headers: {
+        "x-rapidapi-host": "v3.football.api-sports.io",
+        "x-rapidapi-key": apiFootball.apiKey,
+      },
+    };
 
-    const teamData = await axios.get(
-      `${sportRadarAPI.URL}/${sportRadarAPI.accessLevel}/${sportRadarAPI.version}/${sportRadarAPI.languageCode}/seasons/${season}/competitors.json`,
-      { params: { api_key: sportRadarAPI.soccerKey } }
-    );
-
-    for (team of teamData.data.season_competitors) {
-      await updateTeamData(team);
+    if (counter === apiFootball.rateLimit) {
+      await delay();
+      counter = 0;
     }
+    const teamData = await axios(config);
+
+    // console.log(teamData.data.response);
+
+    for (team of teamData.data.response) {
+      await updateTeamData(team.team, season);
+    }
+
+    counter++;
   }
 };
 

@@ -4,22 +4,22 @@ const sequelize = require("../services/database");
 const Team = sequelize.define(
   "teams",
   {
-    competitor_id: {
+    team_id: {
       type: Sequelize.INTEGER,
       allowNull: false,
       primaryKey: true,
     },
-    full_name: {
-      type: Sequelize.STRING,
-      allowNull: false,
-    },
-    short_name: {
+    name: {
       type: Sequelize.STRING,
       allowNull: false,
     },
     abbv: {
       type: Sequelize.STRING,
-      allowNull: false,
+      allowNull: true,
+    },
+    logo: {
+      type: Sequelize.STRING,
+      allowNull: true,
     },
     updatedAt: {
       type: Sequelize.DATE,

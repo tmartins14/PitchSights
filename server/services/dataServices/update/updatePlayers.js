@@ -1,22 +1,24 @@
 const axios = require("axios");
-const Player = require("../../../models/Player");
-const fetchAllSeasonIds = require("../read/fetchAllSeasonIds");
+const Player = require("../../../models/Player.js");
+const MetaData = require("../../../models/MetaData"); // Sequelize model for MetaData
+const fetchMetaData = require("../read/fetchMetaData");
 const delay = require("../../delay");
 const compareApiAndDbData = require("../../compareApiAndDbData");
 const keys = require("../../../config/keys");
-const { sportRadarAPI } = keys;
+const { apiFootball } = keys;
 
-const updatePlayerData = async (playerData) => {
+const updatePlayerData = async (playerData, season) => {
   try {
+    // Check for existing match
     const existingPlayer = await Player.findOne({
-      where: { player_id: playerData.id.split(":")[2] },
+      where: { player_id: playerData.player.id },
     });
 
     const updateData = {
-      player_id: playerData.id.split(":")[2],
-      player_name: playerData.name,
-      nationality: playerData.nationality,
-      jersey_number: playerData.jersey_number,
+      player_id: playerData.player.id,
+      player_name: playerData.player.name,
+      nationality: playerData.player.nationality,
+      age: playerData.player.age,
     };
 
     if (!existingPlayer) {
@@ -29,47 +31,52 @@ const updatePlayerData = async (playerData) => {
       }
     }
 
-    console.log(`Updated Player ${playerData.name}`);
+    // Update meta data to track which matches have been updated - required due to API service limitation
+    await MetaData.update(
+      { players_updated: true },
+      { where: { season_id: season.season_id } }
+    );
+
+    console.log(`Updated Player ${playerData.player.id}`);
   } catch (error) {
-    console.log(`Error updating player ${playerData.name}: `, error);
+    console.log(`Error update player: ${playerData.player.id}: `, error);
   }
 };
 
 const fetchAndUpdatePlayers = async () => {
-  const seasons = await fetchAllSeasonIds();
+  const updateSeasons = await fetchMetaData("players");
 
-  for (season of seasons) {
-    await delay(sportRadarAPI.accessLevel);
+  // API limits requests per minute
+  let counter = 0;
 
-    const playerData = await axios.get(
-      `${sportRadarAPI.URL}/${sportRadarAPI.accessLevel}/${sportRadarAPI.version}/${sportRadarAPI.languageCode}/seasons/${season}/players.json`,
-      { params: { api_key: sportRadarAPI.soccerKey } }
-    );
+  for (season of updateSeasons) {
+    const config = {
+      method: "get",
+      url: `https://v3.football.api-sports.io/players?league=${season.league_id}&season=${season.season_year}`,
+      headers: {
+        "x-rapidapi-host": "v3.football.api-sports.io",
+        "x-rapidapi-key": apiFootball.apiKey,
+      },
+    };
 
-    // console.log(playerData.data.season_players);
-    const playersArray = playerData.data.season_players.map(
-      (player) => player.id
-    );
-
-    for (let i = 0; i < playersArray.length; i++) {
-      await delay(sportRadarAPI.accessLevel);
-      const playerProfile = await axios.get(
-        `${sportRadarAPI.URL}/${sportRadarAPI.accessLevel}/${sportRadarAPI.version}/${sportRadarAPI.languageCode}/players/${playersArray[i]}/profile.json`,
-        { params: { api_key: sportRadarAPI.soccerKey } }
-      );
-
-      playerData.data.season_players[i].nationality =
-        playerProfile.data.player.nationality;
-
-      // console.log(playerData.data.season_players[i]);
-      await updatePlayerData(playerData.data.season_players[i]);
+    if (counter === apiFootball.rateLimit) {
+      await delay();
+      counter = 0;
     }
+
+    const playerData = await axios(config);
+
+    for (player of playerData.data.response) {
+      console.log(player);
+      updatePlayerData(player, season);
+    }
+
+    counter++;
   }
 };
 
 fetchAndUpdatePlayers()
   .then(() => console.log("All players have been updated"))
   .catch((error) =>
-    console.log("An error occurred while updating player: ", error)
-  )
-  .finally();
+    console.log("An error occurred while updating players: ", error)
+  );

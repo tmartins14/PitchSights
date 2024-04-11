@@ -6,28 +6,24 @@ const database = require("../services/database");
 const Match = database.define(
   "matches",
   {
-    sport_event_id: {
+    fixture_id: {
       type: Sequelize.INTEGER,
       autoIncrement: false,
       allowNull: false,
       primaryKey: true,
     },
-    competition_id: {
+    league_id: {
       type: Sequelize.INTEGER,
       allowNull: false,
       references: {
         model: "leagues", // This is the table name that Sequelize automatically generates
-        key: "competition_id",
+        key: "league_id",
       },
       default: -1,
     },
-    season_id: {
+    season_year: {
       type: Sequelize.INTEGER,
       allowNull: false,
-      references: {
-        model: "seasons", // This is the table name that Sequelize automatically generates
-        key: "season_id",
-      },
     },
 
     home_team_id: {
@@ -35,7 +31,7 @@ const Match = database.define(
       allowNull: false,
       references: {
         model: "teams",
-        key: "competitor_id",
+        key: "team_id",
       },
       default: -1,
     },
@@ -44,7 +40,7 @@ const Match = database.define(
       allowNull: false,
       references: {
         model: "teams", // This is the table name that Sequelize automatically generates
-        key: "competitor_id",
+        key: "team_id",
       },
       default: -1,
     },
@@ -53,7 +49,7 @@ const Match = database.define(
       allowNull: true,
       references: {
         model: "teams",
-        key: "competitor_id",
+        key: "team_id",
       },
       default: -1,
     },
@@ -65,7 +61,7 @@ const Match = database.define(
       type: Sequelize.INTEGER,
       allowNull: true,
     },
-    start_time: {
+    start_datetime: {
       type: Sequelize.DATEONLY,
       allowNull: false,
     },

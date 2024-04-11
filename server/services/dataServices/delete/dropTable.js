@@ -1,4 +1,5 @@
-const { database, models } = require("../../../models/index"); // Adjust the path as necessary
+const { database, models } = require("../../../models/models"); // Adjust the path as necessary
+const MetaData = require("../../../models/MetaData");
 
 // Function to drop a table based on the model name
 async function dropTable(modelName) {
@@ -19,6 +20,14 @@ async function dropTable(modelName) {
 
     // Drop the table associated with the model
     await model.drop();
+
+    if (modelName === "teams") {
+      await MetaData.update({ teams_updated: false }, { where: {} });
+    } else if (modelName === "matches") {
+      await MetaData.update({ matches_updated: false }, { where: {} });
+    } else if (modelName === "players") {
+      await MetaData.update({ players_updated: false }, { where: {} });
+    }
     console.log(
       `Table for model "${modelName}" has been successfully deleted.`
     );
@@ -28,4 +37,4 @@ async function dropTable(modelName) {
 }
 
 // Example usage: Replace 'leagues' with the name of the model you wish to drop
-dropTable("leagues");
+dropTable("matches");

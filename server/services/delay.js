@@ -1,12 +1,7 @@
 // Function to introduce a delay
-const delay = (accessLevel) => {
-  // If accessLevel is 'trial', wait for 1 second; otherwise, proceed immediately
+const delay = () => {
   return new Promise((resolve) => {
-    if (accessLevel === "trial") {
-      setTimeout(resolve, 1000); // Delay for 1 second
-    } else {
-      resolve(); // No delay
-    }
+    setTimeout(resolve, 1000 * 60); // Delay for 1 minute
   });
 };
 

@@ -20,10 +20,7 @@ const Player = database.define(
       type: Sequelize.STRING,
       allowNull: true,
     },
-    jersey_number: {
-      type: Sequelize.INTEGER,
-      allowNull: true,
-    },
+    age: { type: Sequelize.INTEGER, allowNull: false },
     updatedAt: {
       type: Sequelize.DATE,
       allowNull: false,
