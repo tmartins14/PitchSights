@@ -18,6 +18,8 @@ require("./services/passport");
 mongoose.connect(keys.mongoURI);
 const app = express();
 
+app.use(helmet());
+
 app.use(
   cookieSession({
     maxAge: 30 * 24 * 60 * 60,
@@ -25,11 +27,18 @@ app.use(
   })
 );
 
+// app.use(
+//   cors({
+//     origin: "http://localhost:3000", // Allow your client application domain
+//     credentials: true, // Allows cookies to be sent
+//   })
+// );
+
+app.use(cors());
+
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use(cors());
-app.use(helmet());
 app.use(express.json());
 
 authRoutes(app);
