@@ -1,0 +1,176 @@
+.body {
+  margin: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(sandybrown, maroon);
+  --scale: 1;
+}
+
+.container {
+  width: calc(var(--scale) * 240em);
+  height: calc(var(--scale) 160em);
+  background-color: green;
+  font-size: calc(var(--scale) * calc(var(--scale) * 4px));
+
+  transform: rotate(90deg);
+  transform-origin: center center;
+}
+
+.container span {
+  display: block;
+}
+
+.field {
+  width: inherit;
+  height: inherit;
+  --line: calc(var(--scale) * 0.6em) solid white;
+  --mark: white;
+  border: var(--line);
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  --field-color1: green;
+  --field-color2: darkgreen;
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--field-color1),
+    var(--field-color1) calc(var(--scale) * 20em),
+    var(--field-color2) calc(var(--scale) * 20em),
+    var(--field-color2) calc(var(--scale) * 40em)
+  );
+}
+
+.white_board {
+  width: inherit;
+  height: inherit;
+  --line: calc(var(--scale) * 0.6em) solid blue;
+  --mark: blue;
+  border: var(--line);
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  --field-color1: white;
+  --field-color2: white;
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--field-color1),
+    var(--field-color1) calc(var(--scale) * 20em),
+    var(--field-color2) calc(var(--scale) * 20em),
+    var(--field-color2) calc(var(--scale) * 40em)
+  );
+}
+
+.halfway_line {
+  width: calc(calc(var(--scale) * 240em) / 2);
+  height: calc(var(--scale) * 160em);
+  border-right: var(--line);
+}
+
+.center_circle,
+.penalty_arc {
+  width: calc(var(--scale) * 40em);
+  height: calc(var(--scale) * 40em);
+  border: var(--line);
+  position: absolute;
+  top: calc((calc(var(--scale) * 160em) - calc(var(--scale) * 40em)) / 2);
+  border-radius: 50%;
+}
+
+.center_circle {
+  left: calc(
+    (
+        calc(var(--scale) * 240em) - calc(var(--scale) * 40em) -
+          calc(var(--scale) * 0.6em)
+      ) / 2
+  );
+}
+
+.center_mark,
+.penalty_mark {
+  width: calc(var(--scale) * 2em);
+  height: calc(var(--scale) * 2em);
+  background-color: var(--mark);
+  border-radius: 50%;
+  position: absolute;
+  top: calc((calc(var(--scale) * 160em) - calc(var(--scale) * 4em)) / 2);
+}
+
+.center_mark {
+  left: calc((calc(var(--scale) * 240em) - calc(var(--scale) * 2em)) / 2);
+}
+
+.penalty_area {
+  width: calc(var(--scale) * 36em);
+  height: calc(var(--scale) * 88em);
+  border: var(--line);
+  position: absolute;
+  top: calc((calc(var(--scale) * 160em) - calc(var(--scale) * 88em)) / 2);
+  left: calc(var(--scale) * -0.6em);
+  background-color: green;
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--field-color1),
+    var(--field-color1) calc(var(--scale) * 20em),
+    var(--field-color2) calc(var(--scale) * 20em),
+    var(--field-color2) calc(var(--scale) * 40em)
+  );
+}
+
+.penalty_mark {
+  left: calc(calc(var(--scale) * 24em) - calc(var(--scale) * 4em) / 2);
+}
+
+.penalty_arc {
+  left: calc(calc(var(--scale) * 24em) - calc(var(--scale) * 40em) / 2);
+  z-index: -1;
+}
+
+.goal_area {
+  width: calc(var(--scale) * 12em);
+  height: calc(var(--scale) * 40em);
+  border: var(--line);
+  position: absolute;
+  top: calc((calc(var(--scale) * 160em) - calc(var(--scale) * 40em)) / 2);
+  left: calc(var(--scale) * -0.6em);
+}
+
+.corner_arc::before,
+.corner_arc::after {
+  content: "";
+  position: absolute;
+  width: calc(var(--scale) * 10em);
+  height: calc(var(--scale) * 10em);
+  border: var(--line);
+  position: absolute;
+  --offset: calc(calc(var(--scale) * -10em) / 2 - calc(var(--scale) * 0.6em));
+  left: var(--offset);
+  border-radius: 50%;
+}
+
+.corner_arc::before {
+  top: var(--offset);
+}
+
+.corner_arc::after {
+  bottom: var(--offset);
+}
+
+.right {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: rotateY(180deg);
+}
+
+.right .penalty_area {
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--field-color2),
+    var(--field-color2)
+      calc(calc(var(--scale) * 20em) + calc(var(--scale) * 0.3em)),
+    var(--field-color1) calc(var(--scale) * 20em),
+    var(--field-color1) calc(var(--scale) * 40em)
+  );
+}
